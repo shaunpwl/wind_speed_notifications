@@ -1,0 +1,19 @@
+{
+  "name": "wind_speed",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha hello/test test/"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "0.20.0",
+    "cron": "^1.8.2",
+    "csv-writer": "^1.6.0",
+    "request": "^2.88.2",
+    "request-promise-native": "^1.0.8"
+  },
+  "devDependencies": {}
+}
