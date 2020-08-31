@@ -1,6 +1,7 @@
 const axios = require("axios");
-const telegramKeyJson = require("./key.json");
-const telegramKey = JSON.parse(telegramKeyJson).key;
+const telegramKeyJson = require("./telegramkey.json");
+const telegramKey = telegramKeyJson.key;
+
 function sendNotification(knots) {
   axios
     .get(
