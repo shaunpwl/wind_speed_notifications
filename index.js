@@ -32,8 +32,7 @@ function apiToCsv() {
           windspeed: "",
         },
       ];
-      csvdata[0].timestamp = data.items[0].timestamp;
-      console.log(csvdata);
+      csvdata[0].timestamp = data.items[0].timestamp;      
       data.items[0].readings.forEach(function (value) {
         //if it is east coast station
         if (value.station_id === "S107") {
