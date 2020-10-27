@@ -3,6 +3,36 @@ const rp = require("request-promise-native");
 const createCsvWriter = require("csv-writer").createObjectCsvWriter;
 const { sendNotification } = require("./telegram");
 
+var job = new CronJob(
+  "*/5 * * * *",
+  function () {
+    main();
+  },
+  null,
+  true,
+  "America/Los_Angeles"
+);
+
+function main() {
+  rp(options)
+    .then(function (data) {
+      const timestamp = data.items[0].timestamp;
+      
+      initCsvWriter();
+      data.items[0].readings.forEach(function (value) {        
+          const windspeed = value.value;
+          const station = mapStationId(value.station_id);
+          
+          alertStrongWind(station,windspeed);                    
+          writeToCSV(timestamp,windspeed,station);
+        
+      });
+    })
+    .catch(function (err) {
+      console.log(err);
+    });
+}
+
 function initCsvWriter() {
   csvWriter = createCsvWriter({
     path: "all.csv",
@@ -23,28 +53,6 @@ var options = {
   json: true, // Automatically parses the JSON string in the response
 };
 
-function apiToCsv() {
-  rp(options)
-    .then(function (data) {
-      
-      initCsvWriter();
-     
-      const timestamp = data.items[0].timestamp;
-      
-      data.items[0].readings.forEach(function (value) {
-        
-          const windspeed = value.value;
-          const station = mapStationId(value.station_id);
-          alertStrongWind(station,windspeed);                    
-          writeToCSV(timestamp,windspeed,station);
-        
-      });
-    })
-    .catch(function (err) {
-      console.log(err);
-    });
-}
-
 function writeToCSV(timestamp,windspeed,station){
   let csvdata = [
     {
@@ -56,20 +64,6 @@ function writeToCSV(timestamp,windspeed,station){
   csvWriter.writeRecords(csvdata);            
 }
 
-var job = new CronJob(
-  "*/5 * * * *",
-  function () {
-    apiToCsv();
-  },
-  null,
-  true,
-  "America/Los_Angeles"
-);
-
-function alertStrongWind(station,windspeed) {
-  if (windspeed > 12) sendNotification(station,windspeed);
-}
-
 function mapStationId(stationid){
   switch (stationid){
     case "S106":
@@ -78,7 +72,13 @@ function mapStationId(stationid){
       return "Woodlands Road"
     case "S116":
       return "West Coast Highway"
+    default:
+      return stastionid
   }    
+}
+
+function alertStrongWind(station,windspeed) {
+  if (windspeed > 12) sendNotification(station,windspeed);
 }
 
 job.start();
