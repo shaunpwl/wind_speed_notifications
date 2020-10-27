@@ -9,3 +9,4 @@ hello/teat,.
 hello/test/test.js
 out.csv
 test.csv
+pm2start.sh
