@@ -5,10 +5,11 @@ const { sendNotification } = require("./telegram");
 
 function initCsvWriter() {
   csvWriter = createCsvWriter({
-    path: "out.csv",
+    path: "all.csv",
     header: [
       { id: "timestamp", title: "timestamp" },
       { id: "windspeed", title: "windspeed(knots)" },
+      { id: "station", title: "station" },
     ],
     append: true,
   });
@@ -25,28 +26,34 @@ var options = {
 function apiToCsv() {
   rp(options)
     .then(function (data) {
+      
       initCsvWriter();
-      let csvdata = [
-        {
-          timestamp: "",
-          windspeed: "",
-        },
-      ];
-      csvdata[0].timestamp = data.items[0].timestamp;
-      console.log(csvdata);
+     
+      const timestamp = data.items[0].timestamp;
+      
       data.items[0].readings.forEach(function (value) {
-        //if it is east coast station
-        if (value.station_id === "S107") {
-          csvdata[0].windspeed = value.value;
-          alertStrongWind(csvdata[0].windspeed);
-          csvWriter.writeRecords(csvdata);
-          // .then(() => console.log("The CSV file was written successfully"));
-        }
+        
+          const windspeed = value.value;
+          const station = mapStationId(value.station_id);
+          alertStrongWind(station,windspeed);                    
+          writeToCSV(timestamp,windspeed,station);
+        
       });
     })
     .catch(function (err) {
       console.log(err);
     });
+}
+
+function writeToCSV(timestamp,windspeed,station){
+  let csvdata = [
+    {
+      timestamp: timestamp,
+      windspeed: windspeed,
+      station: station,
+    },
+  ];
+  csvWriter.writeRecords(csvdata);            
 }
 
 var job = new CronJob(
@@ -59,8 +66,19 @@ var job = new CronJob(
   "America/Los_Angeles"
 );
 
-function alertStrongWind(windspeed) {
-  if (windspeed > 12) sendNotification(windspeed);
+function alertStrongWind(station,windspeed) {
+  if (windspeed > 12) sendNotification(station,windspeed);
+}
+
+function mapStationId(stationid){
+  switch (stationid){
+    case "S106":
+      return "Pulau Ubin"
+    case "S100":      
+      return "Woodlands Road"
+    case "S116":
+      return "West Coast Highway"
+  }    
 }
 
 job.start();
