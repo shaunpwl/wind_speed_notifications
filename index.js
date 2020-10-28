@@ -73,7 +73,7 @@ function mapStationId(stationid){
     case "S116":
       return "West Coast Highway"
     default:
-      return stastionid
+      return stationid
   }    
 }
 
